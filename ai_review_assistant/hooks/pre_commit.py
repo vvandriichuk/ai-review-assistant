@@ -1,6 +1,9 @@
-import os
+from pathlib import Path
+from typing import NoReturn
 
-def install_pre_commit_hook():
+
+def install_pre_commit_hook() -> NoReturn:
+    """Install the pre-commit hook for AI code review."""
     hook_script = """#!/bin/sh
     # Check if skipping AI review is required
     if git rev-parse --abbrev-ref HEAD | grep -q 'ignore-ai-reviewer'; then
@@ -19,14 +22,13 @@ def install_pre_commit_hook():
     exit 0
     """
 
-    hooks_dir = os.path.join(os.getcwd(), '.git', 'hooks')
-    pre_commit_path = os.path.join(hooks_dir, 'pre-commit')
+    hooks_dir = Path.cwd() / ".git" / "hooks"
+    pre_commit_path = hooks_dir / "pre-commit"
 
-    if not os.path.exists(hooks_dir):
-        os.makedirs(hooks_dir)
+    hooks_dir.mkdir(parents=True, exist_ok=True)
 
-    with open(pre_commit_path, 'w') as f:
-        f.write(hook_script)
+    pre_commit_path.write_text(hook_script)
 
-    os.chmod(pre_commit_path, 0o755)
+    pre_commit_path.chmod(0o755)
     print(f"Pre-commit hook installed at {pre_commit_path}")
+    raise SystemExit

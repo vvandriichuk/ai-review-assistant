@@ -1,15 +1,28 @@
-import os
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import HumanMessage
+from pathlib import Path
+from typing import Literal
+
+from langchain_anthropic import ChatAnthropic
+from langchain_core.language_models import BaseChatModel
+from langchain_core.messages import HumanMessage
+from langchain_core.pydantic_v1 import SecretStr
+from langchain_openai import ChatOpenAI
 
 
 class CodeReviewAssistant:
-    def __init__(self, repo_path, vendor_name, model_name, api_key, temperature=0.7, code_depth=3):
+    def __init__(
+        self,
+        repo_path: str,
+        vendor_name: Literal["openai", "anthropic"],
+        model_name: str,
+        api_key: str,
+        temperature: float = 0.7,
+        code_depth: int = 0,
+    ):
         """
         Initialize the CodeReviewAssistant.
 
         :param repo_path: Path to the Git repository.
-        :param vendor_name: The name of the AI vendor (e.g., 'openai').
+        :param vendor_name: The name of the AI vendor ('openai' or 'anthropic').
         :param model_name: The model name or identifier provided by the vendor.
         :param api_key: The API key for the chosen vendor.
         :param temperature: The temperature setting for the LLM (0.0 to 1.0).
@@ -24,30 +37,47 @@ class CodeReviewAssistant:
 
         self.llm = self._initialize_llm()
 
-    def _initialize_llm(self):
-        """
-        Initialize the LLM based on the vendor and model.
-        """
-        if self.vendor_name == 'openai':
-            return ChatOpenAI(api_key=self.api_key, temperature=self.temperature, model_name=self.model_name)
+    def _initialize_llm(self) -> BaseChatModel:
+        if self.vendor_name == "openai":
+            return ChatOpenAI(
+                model=self.model_name,
+                temperature=self.temperature,
+                max_tokens=None,
+                timeout=None,
+                max_retries=2,
+                api_key=SecretStr(self.api_key),
+            )
+        elif self.vendor_name == "anthropic":
+            return ChatAnthropic(
+                model_name=self.model_name,
+                temperature=self.temperature,
+                max_tokens_to_sample=1024,
+                timeout=None,
+                max_retries=2,
+                api_key=SecretStr(self.api_key),
+                stop=None,
+                base_url="...",
+            )
         else:
             raise ValueError(f"Vendor '{self.vendor_name}' is not supported.")
 
-    def review_changes(self, file_path, before_code, after_code):
-        """
-        Review changes in a specific file.
-
-        :param file_path: The path of the file being reviewed.
-        :param before_code: The code before changes.
-        :param after_code: The code after changes.
-        :return: The review comments from the LLM.
-        """
+    def review_changes(self, file_path: str, before_code: str, after_code: str) -> str:
         prompt = self.construct_prompt(file_path, before_code, after_code)
         messages = [HumanMessage(content=prompt)]
-        response = self.llm(messages)
-        return response.content
+        response = self.llm.invoke(messages)
+        if isinstance(response.content, str):
+            return response.content
+        elif isinstance(response.content, list):
+            return " ".join(str(item) for item in response.content)
+        else:
+            return str(response.content)
 
-    def construct_prompt(self, file_path, before_code, after_code):
+    def construct_prompt(
+        self,
+        file_path: str,
+        before_code: str,
+        after_code: str,
+    ) -> str:
         """
         Construct a comprehensive prompt for the LLM.
 
@@ -58,7 +88,7 @@ class CodeReviewAssistant:
         """
         project_structure = self.get_project_structure(self.repo_path, self.code_depth)
 
-        prompt = f"""
+        return f"""
         You are an AI Code Review Assistant. Please review the following code changes and provide feedback:
 
         Project Structure:
@@ -86,9 +116,7 @@ class CodeReviewAssistant:
         Your review:
         """
 
-        return prompt
-
-    def get_project_structure(self, path, depth):
+    def get_project_structure(self, path: str, depth: int) -> str:
         """
         Get the project structure up to a certain depth.
 
@@ -100,12 +128,11 @@ class CodeReviewAssistant:
             return ""
 
         structure = []
-        for item in os.listdir(path):
-            item_path = os.path.join(path, item)
-            if os.path.isdir(item_path):
-                structure.append(f"[DIR] {item}")
-                structure.append(self.get_project_structure(item_path, depth - 1))
+        for item in Path(path).iterdir():
+            if item.is_dir():
+                structure.append(f"[DIR] {item.name}")
+                structure.append(self.get_project_structure(str(item), depth - 1))
             else:
-                structure.append(f"[FILE] {item}")
+                structure.append(f"[FILE] {item.name}")
 
         return "\n".join(structure)
