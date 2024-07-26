@@ -18,6 +18,7 @@
 ### Added
 - Init library
 
-[Unreleased]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.1.0...v0.4.0
 [0.1.0]: https://github.com/vvandriichuk/ai-review-assistant/releases/tag/v0.1.0
