@@ -1,6 +1,5 @@
 from ai_review_assistant.review import CodeReviewAssistant
 
-# Тестовый код
 assistant = CodeReviewAssistant(
     repo_path=".",
     vendor_name="openai",
@@ -9,7 +8,6 @@ assistant = CodeReviewAssistant(
 )
 
 
-# Пример использования
 result = assistant.review_changes(
     "example.py",
     "def hello():\n    print('Hello')",

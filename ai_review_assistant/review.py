@@ -15,8 +15,9 @@ class CodeReviewAssistant:
         vendor_name: Literal["openai", "anthropic"],
         model_name: str,
         api_key: str,
-        temperature: float = 0.7,
+        temperature: float = 0.0,
         code_depth: int = 0,
+        language: str = "Python",
     ):
         """
         Initialize the CodeReviewAssistant.
@@ -27,6 +28,7 @@ class CodeReviewAssistant:
         :param api_key: The API key for the chosen vendor.
         :param temperature: The temperature setting for the LLM (0.0 to 1.0).
         :param code_depth: The depth of the code structure to include in the prompt.
+        :param language: The programming language of the code being reviewed.
         """
         self.repo_path = repo_path
         self.vendor_name = vendor_name.lower()
@@ -34,6 +36,7 @@ class CodeReviewAssistant:
         self.api_key = api_key
         self.temperature = temperature
         self.code_depth = code_depth
+        self.language = language
 
         self.llm = self._initialize_llm()
 
@@ -89,7 +92,7 @@ class CodeReviewAssistant:
         project_structure = self.get_project_structure(self.repo_path, self.code_depth)
 
         return f"""
-        You are an AI Code Review Assistant. Please review the following code changes and provide feedback:
+        You are an AI Code Review Assistant and you know {self.language} as an expert. You are a {self.language} senior developer. Please review the following code changes and provide feedback:
 
         Project Structure:
         {project_structure}
@@ -136,3 +139,18 @@ class CodeReviewAssistant:
                 structure.append(f"[FILE] {item.name}")
 
         return "\n".join(structure)
+
+    def __repr__(self) -> str:
+        return (
+            f"CodeReviewAssistant(repo_path='{self.repo_path}', "
+            f"vendor_name='{self.vendor_name}', "
+            f"model_name='{self.model_name}', "
+            f"temperature={self.temperature}, "
+            f"code_depth={self.code_depth})"
+        )
+
+    def __str__(self) -> str:
+        return (
+            f"Code Review Assistant using {self.vendor_name.capitalize()} "
+            f"with model {self.model_name}"
+        )

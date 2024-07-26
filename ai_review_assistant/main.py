@@ -53,6 +53,11 @@ def get_file_changes(
     default=0,
     help="Depth of code structure to include in review",
 )
+@click.option(
+    "--language",
+    default="Python",
+    help="Programming language of the code being reviewed",
+)
 @click.pass_context
 def cli(
     ctx: click.Context,
@@ -61,6 +66,7 @@ def cli(
     api_key: str,
     temperature: float,
     code_depth: int,
+    language: str,
 ) -> None:
     if not api_key:
         click.echo(
@@ -79,6 +85,7 @@ def cli(
             api_key=api_key,
             temperature=temperature,
             code_depth=code_depth,
+            language=language,
         ),
         "repo": repo,
         "current_commit": current_commit,
