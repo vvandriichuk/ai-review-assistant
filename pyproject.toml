@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "ai-review-assistant"
-version = "0.4.0"
+version = "0.5.0"
 description = "An AI-powered code review assistant"
 authors = ["Viktor Andriichuk <v.andriichuk@gmail.com>"]
 readme = "README.md"
 license = "MIT"
-homepage = "https://github.com/yourusername/ai_review_assistant"
-repository = "https://github.com/yourusername/ai_review_assistant"
+homepage = "https://github.com/vandriichuk/ai_review_assistant"
+repository = "https://github.com/vandriichuk/ai_review_assistant"
 keywords = ["ai", "code review", "assistant"]
 
 [tool.poetry.dependencies]
@@ -23,6 +23,7 @@ anthropic = "^0.31.2"
 types-setuptools = "^71.1.0.20240724"
 twine = "^5.1.1"
 build = "^1.2.1"
+importlib-metadata = {version = "^4.0", python = "<3.8"}
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.0"
@@ -34,8 +35,13 @@ install-ai-review-hook = "ai_review_assistant.hooks.pre_commit:install_pre_commi
 ai_review_assistant = "ai_review_assistant.main:cli"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "semver"
 
 [mypy]
 plugins = ["pydantic.mypy"]
@@ -52,89 +58,28 @@ addopts = ["-ra", "-q"]
 
 [tool.ruff]
 fix = true
-# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
 lint.select = ["ALL"]
 lint.ignore = [
-    "A003",
-    "ANN101",
-    "ANN102",
-    "ANN204",
-    "ANN401",
-    "D",
-    "EM101",
-    "ERA001",
-    "FBT",
-    "FIX",
-    "FIX002",
-    "N999",
-    "PLR2004",
-    "TRY003",
-    "TD001",
-    "TD002",
-    "TD003",
-    "EM102",
-    "BLE001",
-    "TRY400",
-    "TRY002",
-
-    "G004",
-    "S311",
-    "E402",
-    "S101",
-    "T201", # [Nazareka] for now, llm engine will be with prints, we will replace them with logs later
-    "S102", # [Nazareka] we use exec, we made it safe as possible
-    "PGH003", # it fixes <Use specific rule codes when ignoring type issues>
-    "SIM118", # it fixes <Use `key in dict` instead of `key in dict.keys()`>
-    "RET505", # it fixes <Unnecessary `elif` after `return` statement>
-    "S307", # it fixes <Use of possibly insecure function; consider using `ast.literal_eval`>
-    "RET505", # it fixes  Unnecessary `elif` after `return` statement - we need this functionality
-    "E731", # it fixes <Do not assign a lambda expression to a variable>
-    "E501", # Line too long (137 > 120)
-    "PLR0913", # Too many arguments in function definition (6 > 5)
+    "A003", "ANN101", "ANN102", "ANN204", "ANN401",
+    "D", "EM101", "ERA001", "FBT", "FIX", "FIX002",
+    "N999", "PLR2004", "TRY003", "TD001", "TD002",
+    "TD003", "EM102", "BLE001", "TRY400", "TRY002",
+    "G004", "S311", "E402", "S101", "T201", "S102",
+    "PGH003", "SIM118", "RET505", "S307", "E731",
+    "E501", "PLR0913"
 ]
-
-# Allow autofix for all enabled rules (when `--fix`) is provided.
 lint.fixable = ["ALL"]
 lint.unfixable = []
-# Exclude a variety of commonly ignored directories.
 lint.exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".git-rewrite",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "database/versions",
-    "venv",
-    ".session",
-    "logs",
-    ".lock",
-    ".toml",
-    "tests/*.py",
-    "flows/*.py",
+    ".bzr", ".direnv", ".eggs", ".git", ".git-rewrite",
+    ".hg", ".mypy_cache", ".nox", ".pants.d", ".pytype",
+    ".ruff_cache", ".svn", ".tox", ".venv", "__pypackages__",
+    "_build", "buck-out", "build", "dist", "node_modules",
+    "database/versions", "venv", ".session", "logs",
+    ".lock", ".toml", "tests/*.py", "flows/*.py"
 ]
-
-# Same as Black.
 line-length = 120
-
-# Allow unused variables when underscore-prefixed.
 lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
-# Assume Python 3.11.
 target-version = "py311"
 
 [tool.ruff.lint.mccabe]

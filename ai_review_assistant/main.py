@@ -10,6 +10,7 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.syntax import Syntax
 
+from ai_review_assistant import __version__
 from ai_review_assistant.review import CodeReviewAssistant
 
 console = Console()
@@ -52,7 +53,8 @@ def parse_languages(value: str) -> list[str]:
     return [lang.strip() for lang in value.split(",")]
 
 
-@click.group()
+@click.group(invoke_without_command=True)
+@click.option("--version", is_flag=True, help="Show the version and exit.")
 @click.option(
     "--vendor",
     type=click.Choice(["openai", "anthropic"]),
@@ -88,6 +90,7 @@ def parse_languages(value: str) -> list[str]:
 @click.pass_context
 def cli(
     ctx: click.Context,
+    version: bool,
     vendor: str,
     model: str,
     api_key: str,
@@ -96,6 +99,14 @@ def cli(
     program_language: list[str],
     result_output_language: str,
 ) -> None:
+    if version:
+        click.echo(f"AI Review Assistant version {__version__}")
+        ctx.exit()
+
+    if ctx.invoked_subcommand is None:
+        click.echo(ctx.get_help())
+        ctx.exit()
+
     if not api_key:
         click.echo(
             "API key must be provided either via --api-key option or AI_API_KEY environment variable.",

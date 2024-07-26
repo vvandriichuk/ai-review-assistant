@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.5.0] - 2024-07-26
+### Added
+- You can check version of AI Review Assistant
+
 ## [0.4.0] - 2024-07-26
 ### Added
 - Added splitting long context by batch size
@@ -14,6 +18,6 @@
 ### Added
 - Init library
 
-[Unreleased]: https://github.com/vandriichuk/ai_review_assistant/compare/v0.4.0...HEAD
-[0.4.0]: https://github.com/vandriichuk/ai_review_assistant/compare/v0.1.0...v0.4.0
-[0.1.0]: https://github.com/vandriichuk/ai_review_assistant/releases/tag/v0.1.0
+[Unreleased]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.1.0...v0.4.0
+[0.1.0]: https://github.com/vvandriichuk/ai-review-assistant/releases/tag/v0.1.0

@@ -1,4 +1,3 @@
-import time
 from pathlib import Path
 
 from setuptools import find_packages, setup
@@ -18,7 +17,11 @@ except FileNotFoundError:
 
 setup(
     name="ai_review_assistant",
-    version=f"0.4.{int(time.time())}",
+    use_scm_version={
+        "version_scheme": "guess-next-dev",
+        "local_scheme": "dirty-tag",
+    },
+    setup_requires=["setuptools_scm"],
     packages=find_packages(),
     install_requires=[
         "gitpython>=3.1.43",
@@ -29,6 +32,7 @@ setup(
         "click>=8.1.7",
         "openai>=1.37.0",
         "anthropic>=0.31.2",
+        "importlib-metadata;python_version<'3.8'",
     ],
     extras_require={
         "dev": [
@@ -57,7 +61,6 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.11",
     ],
-    # Add package_data to include CHANGELOG.md in the distribution
     package_data={
         "": ["CHANGELOG.md"],
     },

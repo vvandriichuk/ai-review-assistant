@@ -442,3 +442,10 @@ def test_cli_review_command_multiple_languages(
         program_language=["Python", "JavaScript"],
         result_output_language="English",
     )
+
+
+def test_version_command():
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--version"])
+    assert result.exit_code == 0
+    assert "AI Review Assistant version" in result.output

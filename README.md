@@ -1,9 +1,9 @@
 # Installation
 
-You can install the latest version of AI Review Assistant from [GitHub](https://github.com/vandriichuk/ai_review_assistant):
+You can install the latest version of AI Review Assistant from [GitHub](https://github.com/vvandriichuk/ai-review-assistant):
 
 ```bash
-pip install git+https://github.com/vandriichuk/ai_review_assistant.git
+pip install git+https://github.com/vvandriichuk/ai-review-assistant.git
 ```
 
 # Help:
