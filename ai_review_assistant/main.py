@@ -4,8 +4,14 @@ from typing import Literal, cast
 import click
 from git import Repo
 from git.objects import Commit
+from rich.console import Console
+from rich.markdown import Markdown
+from rich.panel import Panel
+from rich.syntax import Syntax
 
 from ai_review_assistant.review import CodeReviewAssistant
+
+console = Console()
 
 
 def get_current_and_previous_commit(repo: Repo) -> tuple[Commit, Commit | None]:
@@ -130,11 +136,36 @@ def review(ctx: click.Context) -> None:
 def _print_reviews(reviews: dict[str, str]) -> None:
     if reviews:
         for file_path, review in reviews.items():
-            click.echo(click.style(f"File: {file_path}", fg="green", bold=True))
-            click.echo(click.style("Review:", fg="yellow", bold=True))
-            click.echo(f"{review}\n")
+            console.print(
+                Panel(f"[bold green]File:[/bold green] {file_path}", expand=False),
+            )
+            console.print("[bold yellow]Review:[/bold yellow]")
+
+            # Split the review into parts
+            parts = review.split("```")
+            for i, part in enumerate(parts):
+                if i % 2 == 0:
+                    # This is regular text, print as Markdown
+                    md = Markdown(part.strip())
+                    console.print(md)
+                else:
+                    # This is code, use Pygments for syntax highlighting
+                    # The first word after ``` is typically the language
+                    code_lines = part.strip().split("\n")
+                    if code_lines:
+                        lang = code_lines[0].strip().lower()
+                        code = "\n".join(code_lines[1:])
+                        syntax = Syntax(code, lang, theme="monokai", line_numbers=True)
+                        console.print(Panel(syntax, expand=False))
+
+            console.print()
     else:
-        click.echo("No changes detected or review failed.")
+        console.print(
+            Panel(
+                "[bold red]No changes detected or review failed.[/bold red]",
+                expand=False,
+            ),
+        )
         sys.exit(1)
 
 
