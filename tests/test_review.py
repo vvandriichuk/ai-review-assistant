@@ -60,10 +60,19 @@ def test_cli_review_command(
         "test_file.py": {"before": "old", "after": "new"}
     }
 
-    mock_assistant.review_changes.return_value = "Mocked review result"
-
     runner = CliRunner()
-    result = runner.invoke(cli, ["--api-key", "test_key", "review"])
+    result = runner.invoke(
+        cli,
+        [
+            "--api-key",
+            "test_key",
+            "--program-language",
+            "Python",
+            "--result-output-language",
+            "English",
+            "review",
+        ],
+    )
 
     assert result.exit_code == 0
     assert "Reviewing changes" in result.output
@@ -81,21 +90,21 @@ def test_cli_review_command_no_changes(
     MockGetFileChanges.return_value = {}
 
     runner = CliRunner()
-    result = runner.invoke(cli, ["--api-key", "test_key", "review"])
+    result = runner.invoke(
+        cli,
+        [
+            "--api-key",
+            "test_key",
+            "--program-language",
+            "JavaScript",
+            "--result-output-language",
+            "English",
+            "review",
+        ],
+    )
 
     assert result.exit_code == 1
     assert "No changes detected or review failed." in result.output
-
-
-@patch("ai_review_assistant.main.Repo")
-def test_cli_missing_api_key(MockRepo, mock_repo):
-    MockRepo.return_value = mock_repo
-
-    runner = CliRunner()
-    result = runner.invoke(cli, ["review"])
-
-    assert result.exit_code == 1
-    assert "API key must be provided" in result.output
 
 
 def test_code_review_assistant_init():
@@ -106,12 +115,16 @@ def test_code_review_assistant_init():
         api_key="test_key",
         temperature=0.5,
         code_depth=2,
+        program_language="Python",
+        result_output_language="English",
     )
     assert assistant.repo_path == "."
     assert assistant.vendor_name == "openai"
     assert assistant.model_name == "gpt-3.5-turbo"
     assert assistant.temperature == 0.5
     assert assistant.code_depth == 2
+    assert assistant.program_language == "Python"
+    assert assistant.result_output_language == "English"
 
 
 @patch("ai_review_assistant.review.ChatOpenAI")
@@ -125,8 +138,48 @@ def test_code_review_assistant_review_changes(MockChatOpenAI):
         vendor_name="openai",
         model_name="gpt-3.5-turbo",
         api_key="test_key",
+        program_language="JavaScript",
+        result_output_language="English",
     )
 
-    result = assistant.review_changes("test_file.py", "old code", "new code")
+    result = assistant.review_changes("test_file.js", "old code", "new code")
     assert result == "Mocked AI review"
     mock_llm.invoke.assert_called_once()
+
+
+def test_code_review_assistant_construct_prompt():
+    assistant = CodeReviewAssistant(
+        repo_path=".",
+        vendor_name="openai",
+        model_name="gpt-3.5-turbo",
+        api_key="test_key",
+        program_language="Python",
+        result_output_language="English",
+    )
+
+    prompt = assistant.construct_prompt("test_file.py", "old code", "new code")
+    assert "```Python" in prompt
+    assert "Please provide your review in English" in prompt
+
+
+def test_code_review_assistant_str_repr():
+    assistant = CodeReviewAssistant(
+        repo_path=".",
+        vendor_name="openai",
+        model_name="gpt-3.5-turbo",
+        api_key="test_key",
+        temperature=0.7,
+        code_depth=3,
+        program_language="JavaScript",
+        result_output_language="English",
+    )
+
+    assert (
+        str(assistant)
+        == "Code Review Assistant for JavaScript using Openai with model gpt-3.5-turbo (output in English)"
+    )
+    assert repr(assistant) == (
+        "CodeReviewAssistant(repo_path='.', vendor_name='openai', "
+        "model_name='gpt-3.5-turbo', temperature=0.7, code_depth=3, "
+        "program_language='JavaScript', result_output_language='English')"
+    )

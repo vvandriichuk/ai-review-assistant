@@ -17,7 +17,8 @@ class CodeReviewAssistant:
         api_key: str,
         temperature: float = 0.0,
         code_depth: int = 0,
-        language: str = "Python",
+        program_language: str = "Python",
+        result_output_language: str = "English",
     ):
         """
         Initialize the CodeReviewAssistant.
@@ -28,7 +29,8 @@ class CodeReviewAssistant:
         :param api_key: The API key for the chosen vendor.
         :param temperature: The temperature setting for the LLM (0.0 to 1.0).
         :param code_depth: The depth of the code structure to include in the prompt.
-        :param language: The programming language of the code being reviewed.
+        :param program_language: The programming language of the code being reviewed.
+        :param result_output_language: The language for the output review.
         """
         self.repo_path = repo_path
         self.vendor_name = vendor_name.lower()
@@ -36,7 +38,8 @@ class CodeReviewAssistant:
         self.api_key = api_key
         self.temperature = temperature
         self.code_depth = code_depth
-        self.language = language
+        self.program_language = program_language
+        self.result_output_language = result_output_language
 
         self.llm = self._initialize_llm()
 
@@ -81,18 +84,10 @@ class CodeReviewAssistant:
         before_code: str,
         after_code: str,
     ) -> str:
-        """
-        Construct a comprehensive prompt for the LLM.
-
-        :param file_path: The path of the file being reviewed.
-        :param before_code: The code before changes.
-        :param after_code: The code after changes.
-        :return: A string containing the complete prompt.
-        """
         project_structure = self.get_project_structure(self.repo_path, self.code_depth)
 
         return f"""
-        You are an AI Code Review Assistant and you know {self.language} as an expert. You are a {self.language} senior developer. Please review the following code changes and provide feedback:
+        You are an AI Code Review Assistant and you know {self.program_language} as an expert. You are a {self.program_language} senior developer. Please review the following code changes and provide feedback:
 
         Project Structure:
         {project_structure}
@@ -100,12 +95,12 @@ class CodeReviewAssistant:
         File being reviewed: {file_path}
 
         Code before changes:
-        ```
+        ```{self.program_language}
         {before_code}
         ```
 
         Code after changes:
-        ```
+        ```{self.program_language}
         {after_code}
         ```
 
@@ -115,6 +110,9 @@ class CodeReviewAssistant:
         3. Performance implications
         4. Consistency with the overall project structure
         5. Suggestions for improvement
+        6. Best practices specific to {self.program_language}
+
+        Please provide your review in {self.result_output_language}.
 
         Your review:
         """
@@ -146,11 +144,13 @@ class CodeReviewAssistant:
             f"vendor_name='{self.vendor_name}', "
             f"model_name='{self.model_name}', "
             f"temperature={self.temperature}, "
-            f"code_depth={self.code_depth})"
+            f"code_depth={self.code_depth}, "
+            f"program_language='{self.program_language}', "
+            f"result_output_language='{self.result_output_language}')"
         )
 
     def __str__(self) -> str:
         return (
-            f"Code Review Assistant using {self.vendor_name.capitalize()} "
-            f"with model {self.model_name}"
+            f"Code Review Assistant for {self.program_language} using {self.vendor_name.capitalize()} "
+            f"with model {self.model_name} (output in {self.result_output_language})"
         )
