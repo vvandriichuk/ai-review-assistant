@@ -7,7 +7,7 @@ with Path("README.md").open("r", encoding="utf-8") as f:
 
 setup(
     name="ai_review_assistant",
-    version="0.2",
+    version="0.3",
     packages=find_packages(),
     install_requires=[
         "gitpython>=3.1.30",
