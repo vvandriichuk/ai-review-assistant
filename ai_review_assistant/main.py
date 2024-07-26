@@ -1,8 +1,9 @@
 import sys
+from pathlib import Path
 from typing import Literal, cast
 
 import click
-from git import Repo
+from git import InvalidGitRepositoryError, Repo
 from git.objects import Commit
 from rich.console import Console
 from rich.markdown import Markdown
@@ -12,6 +13,15 @@ from rich.syntax import Syntax
 from ai_review_assistant.review import CodeReviewAssistant
 
 console = Console()
+
+
+def find_git_root(path: Path) -> str | None:
+    try:
+        repo = Repo(path, search_parent_directories=True)
+        working_tree_dir = repo.working_tree_dir
+        return str(working_tree_dir) if working_tree_dir is not None else None
+    except InvalidGitRepositoryError:
+        return None
 
 
 def get_current_and_previous_commit(repo: Repo) -> tuple[Commit, Commit | None]:
@@ -38,6 +48,10 @@ def get_file_changes(
     return changes
 
 
+def parse_languages(value: str) -> list[str]:
+    return [lang.strip() for lang in value.split(",")]
+
+
 @click.group()
 @click.option(
     "--vendor",
@@ -50,7 +64,7 @@ def get_file_changes(
 @click.option(
     "--temperature",
     type=float,
-    default=0.7,
+    default=0.1,
     help="Temperature for the AI model",
 )
 @click.option(
@@ -62,7 +76,9 @@ def get_file_changes(
 @click.option(
     "--program-language",
     default="Python",
-    help="Programming language of the code being reviewed",
+    help="Programming language(s) of the code being reviewed (comma-separated for multiple, e.g., 'Python,JavaScript')",
+    type=click.UNPROCESSED,
+    callback=lambda _, __, value: parse_languages(value),
 )
 @click.option(
     "--result-output-language",
@@ -77,7 +93,7 @@ def cli(
     api_key: str,
     temperature: float,
     code_depth: int,
-    program_language: str,
+    program_language: list[str],
     result_output_language: str,
 ) -> None:
     if not api_key:
@@ -86,12 +102,17 @@ def cli(
         )
         sys.exit(1)
 
-    repo = Repo(".")
+    git_root = find_git_root(Path.cwd())
+    if git_root is None:
+        click.echo("Error: Not a git repository (or any of the parent directories).")
+        sys.exit(1)
+
+    repo = Repo(git_root)
     current_commit, previous_commit = get_current_and_previous_commit(repo)
 
     ctx.obj = {
         "assistant": CodeReviewAssistant(
-            repo_path=".",
+            repo_path=git_root,
             vendor_name=cast(Literal["openai", "anthropic"], vendor),
             model_name=model,
             api_key=api_key,

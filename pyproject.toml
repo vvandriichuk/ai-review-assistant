@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ai-review-assistant"
-version = "0.1.0"
+version = "0.4.0"
 description = "An AI-powered code review assistant"
 authors = ["Viktor Andriichuk <v.andriichuk@gmail.com>"]
 readme = "README.md"
@@ -38,7 +38,6 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [mypy]
-exclude = ["^(tests)"]
 plugins = ["pydantic.mypy"]
 
 [mypy.grpc]

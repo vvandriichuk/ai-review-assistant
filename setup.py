@@ -1,23 +1,34 @@
+import time
 from pathlib import Path
 
 from setuptools import find_packages, setup
 
+# Read the content of README.md
 with Path("README.md").open("r", encoding="utf-8") as f:
     long_description = f.read()
 
+# Read the content of CHANGELOG.md
+try:
+    with Path("CHANGELOG.md").open("r", encoding="utf-8") as f:
+        long_description += "\n\n" + f.read()
+except FileNotFoundError:
+    print(
+        "WARNING: CHANGELOG.md not found. Consider creating one for better package documentation.",
+    )
+
 setup(
     name="ai_review_assistant",
-    version="0.3",
+    version=f"0.4.{int(time.time())}",
     packages=find_packages(),
     install_requires=[
-        "gitpython>=3.1.30",
-        "langchain>=0.1.0",
-        "langchain-core>=0.1.0",
-        "langchain-openai>=0.0.2",
-        "langchain-anthropic>=0.0.1",
-        "click>=8.0.0",
-        "openai>=1.0.0",
-        "anthropic>=0.8.0",
+        "gitpython>=3.1.43",
+        "langchain>=0.2.11",
+        "langchain-core>=0.2.23",
+        "langchain-openai>=0.1.17",
+        "langchain-anthropic>=0.1.20",
+        "click>=8.1.7",
+        "openai>=1.37.0",
+        "anthropic>=0.31.2",
     ],
     extras_require={
         "dev": [
@@ -39,11 +50,15 @@ setup(
     description="An AI-powered code review assistant",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/ai_review_assistant",
+    url="https://github.com/vandriichuk/ai_review_assistant",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.11",
     ],
+    # Add package_data to include CHANGELOG.md in the distribution
+    package_data={
+        "": ["CHANGELOG.md"],
+    },
 )
