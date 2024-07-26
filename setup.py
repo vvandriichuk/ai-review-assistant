@@ -18,8 +18,8 @@ except FileNotFoundError:
 setup(
     name="ai_review_assistant",
     use_scm_version={
-        "version_scheme": "guess-next-dev",
-        "local_scheme": "dirty-tag",
+        "version_scheme": "no-guess-dev",
+        "local_scheme": "no-local-version",
     },
     setup_requires=["setuptools_scm"],
     packages=find_packages(),

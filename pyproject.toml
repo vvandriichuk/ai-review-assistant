@@ -35,8 +35,12 @@ install-ai-review-hook = "ai_review_assistant.hooks.pre_commit:install_pre_commi
 ai_review_assistant = "ai_review_assistant.main:cli"
 
 [build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
-build-backend = "poetry_dynamic_versioning.backend"
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+version_scheme = "no-guess-dev"
+local_scheme = "no-local-version"
 
 [tool.poetry-dynamic-versioning]
 enable = true
