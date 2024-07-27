@@ -10,7 +10,7 @@ pip install git+https://github.com/vvandriichuk/ai-review-assistant.git
 ai_review_assistant --help
 
 # Example of usage:
-ai_review_assistant --vendor openai --model gpt-4o --api-key your_api_key --program-language "Python,JavaScript,TypeScript" --result-output-language English review
+ai_review_assistant --vendor openai --model gpt-4o --api-key your_api_key --program-language "Python,JavaScript,TypeScript" --result-output-language English --ignore-settings-files/--review-all-files review
 
 # You can put your own prompt to pyproject.toml:
 

@@ -22,6 +22,7 @@ class CodeReviewAssistant:
         program_language: list[str] | None = None,
         result_output_language: str = "English",
         batch_size: int = 100000,
+        ignore_settings_files: bool = True,
     ):
         """
         Initialize the CodeReviewAssistant.
@@ -46,6 +47,7 @@ class CodeReviewAssistant:
         self.program_language = program_language
         self.result_output_language = result_output_language
         self.batch_size = batch_size
+        self.ignore_settings_files = ignore_settings_files
 
         self.llm = self._initialize_llm()
 
@@ -86,7 +88,28 @@ class CodeReviewAssistant:
         """
         return len(self.tokenizer.encode(text))
 
-    def review_changes(self, file_path: str, before_code: str, after_code: str) -> str:
+    def should_ignore_file(self, file_path: str) -> bool:
+        """
+        Check if the file should be ignored based on its name or extension.
+
+        :param file_path: Path to the file
+        :return: True if the file should be ignored, False otherwise
+        """
+        if not self.ignore_settings_files:
+            return False
+
+        file_name = Path(file_path).name
+        ignored_extensions = (".toml", ".lock", ".md", ".txt", ".in", ".ini", ".cfg")
+        return file_name.startswith(".") or (
+            self.ignore_settings_files and file_name.endswith(ignored_extensions)
+        )
+
+    def review_changes(
+        self,
+        file_path: str,
+        before_code: str,
+        after_code: str,
+    ) -> str | None:
         """
         Review the changes made to a file.
 
@@ -95,6 +118,9 @@ class CodeReviewAssistant:
         :param after_code: The code after changes.
         :return: A string containing the review of the changes.
         """
+        if self.should_ignore_file(file_path):
+            return None
+
         project_structure = self.get_project_structure(self.repo_path, self.code_depth)
         base_prompt = self.construct_base_prompt(file_path, project_structure)
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.0] - 2024-07-27
+### Added
+- Added ignore_settings_files option to ignore settings files (toml, lock, md, txt, in, ini and that start from dot in the name)
+
 ## [0.6.2] - 2024-07-27
 ### Added
 - Added missed rich library to dependencies list
@@ -30,7 +34,8 @@
 ### Added
 - Init library
 
-[Unreleased]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.6.2...v0.7.0
 [0.6.2]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.5.0...v0.6.0

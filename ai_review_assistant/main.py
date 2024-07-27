@@ -87,6 +87,11 @@ def parse_languages(value: str) -> list[str]:
     default="English",
     help="Language for the output review",
 )
+@click.option(
+    "--ignore-settings-files/--review-all-files",
+    default=True,
+    help="Ignore settings and config files (default: True)",
+)
 @click.pass_context
 def cli(
     ctx: click.Context,
@@ -98,6 +103,7 @@ def cli(
     code_depth: int,
     program_language: list[str],
     result_output_language: str,
+    ignore_settings_files: bool,
 ) -> None:
     if version:
         click.echo(f"AI Review Assistant version {__version__}")
@@ -131,6 +137,7 @@ def cli(
             code_depth=code_depth,
             program_language=program_language,
             result_output_language=result_output_language,
+            ignore_settings_files=ignore_settings_files,
         ),
         "repo": repo,
         "current_commit": current_commit,
@@ -160,7 +167,8 @@ def review(ctx: click.Context) -> None:
                 file_changes["before"],
                 file_changes["after"],
             )
-            reviews[file_path] = review
+            if review is not None:
+                reviews[file_path] = review
 
     _print_reviews(reviews)
 

@@ -441,6 +441,7 @@ def test_cli_review_command_multiple_languages(
         code_depth=0,
         program_language=["Python", "JavaScript"],
         result_output_language="English",
+        ignore_settings_files=True,
     )
 
 
@@ -449,3 +450,172 @@ def test_version_command():
     result = runner.invoke(cli, ["--version"])
     assert result.exit_code == 0
     assert "AI Review Assistant version" in result.output
+
+
+def test_code_review_assistant_should_ignore_file():
+    assistant = CodeReviewAssistant(
+        repo_path=".",
+        vendor_name="openai",
+        model_name="gpt-3.5-turbo",
+        api_key="test_key",
+        program_language=["Python"],
+        result_output_language="English",
+        ignore_settings_files=True,
+    )
+
+    assert assistant.should_ignore_file(".gitignore") == True
+    assert assistant.should_ignore_file("config.toml") == True
+    assert assistant.should_ignore_file("README.md") == True
+    assert assistant.should_ignore_file("requirements.txt") == True
+    assert assistant.should_ignore_file("setup.cfg") == True
+    assert assistant.should_ignore_file("test.in") == True
+    assert assistant.should_ignore_file("test.ini") == True
+    assert assistant.should_ignore_file("main.py") == False
+    assert assistant.should_ignore_file("test_file.py") == False
+
+    # Check if ignore_settings_files=False
+    assistant.ignore_settings_files = False
+    assert assistant.should_ignore_file(".gitignore") == False
+    assert assistant.should_ignore_file("config.toml") == False
+    assert assistant.should_ignore_file("README.md") == False
+    assert assistant.should_ignore_file("requirements.txt") == False
+    assert assistant.should_ignore_file("setup.cfg") == False
+    assert assistant.should_ignore_file("test.in") == False
+    assert assistant.should_ignore_file("test.ini") == False
+    assert assistant.should_ignore_file("main.py") == False
+    assert assistant.should_ignore_file("test_file.py") == False
+
+
+@patch("ai_review_assistant.review.ChatOpenAI")
+def test_code_review_assistant_ignore_settings_files(MockChatOpenAI):
+    mock_llm = Mock()
+    mock_llm.invoke.return_value.content = "Mocked AI review"
+    MockChatOpenAI.return_value = mock_llm
+
+    assistant = CodeReviewAssistant(
+        repo_path=".",
+        vendor_name="openai",
+        model_name="gpt-3.5-turbo",
+        api_key="test_key",
+        program_language=["Python"],
+        result_output_language="English",
+        ignore_settings_files=True,
+    )
+
+    result = assistant.review_changes("config.toml", "old config", "new config")
+    assert result is None
+    mock_llm.invoke.assert_not_called()
+
+    result = assistant.review_changes("main.py", "old code", "new code")
+    assert result == "Mocked AI review"
+    mock_llm.invoke.assert_called_once()
+
+
+@patch("ai_review_assistant.main.Repo")
+@patch("ai_review_assistant.main.CodeReviewAssistant")
+@patch("ai_review_assistant.main.get_file_changes")
+@patch("ai_review_assistant.main.find_git_root")
+def test_cli_review_command_ignore_settings_files(
+    MockFindGitRoot,
+    MockGetFileChanges,
+    MockCodeReviewAssistant,
+    MockRepo,
+):
+    MockFindGitRoot.return_value = "/mock/git/root"
+    MockGetFileChanges.return_value = {
+        "config.toml": {"before": "old config", "after": "new config"},
+        "main.py": {"before": "old code", "after": "new code"},
+    }
+
+    mock_assistant = Mock()
+    mock_assistant.review_changes.side_effect = [None, "Mocked review for main.py"]
+    MockCodeReviewAssistant.return_value = mock_assistant
+
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "--api-key",
+            "test_key",
+            "--program-language",
+            "Python",
+            "--result-output-language",
+            "English",
+            "--ignore-settings-files",
+            "review",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "config.toml" not in result.output
+    assert "main.py" in result.output
+    assert "Mocked review for main.py" in result.output
+
+    MockCodeReviewAssistant.assert_called_once_with(
+        repo_path="/mock/git/root",
+        vendor_name="openai",
+        model_name="gpt-3.5-turbo",
+        api_key="test_key",
+        temperature=0.1,
+        code_depth=0,
+        program_language=["Python"],
+        result_output_language="English",
+        ignore_settings_files=True,
+    )
+
+
+@patch("ai_review_assistant.main.Repo")
+@patch("ai_review_assistant.main.CodeReviewAssistant")
+@patch("ai_review_assistant.main.get_file_changes")
+@patch("ai_review_assistant.main.find_git_root")
+def test_cli_review_command_review_all_files(
+    MockFindGitRoot,
+    MockGetFileChanges,
+    MockCodeReviewAssistant,
+    MockRepo,
+):
+    MockFindGitRoot.return_value = "/mock/git/root"
+    MockGetFileChanges.return_value = {
+        "config.toml": {"before": "old config", "after": "new config"},
+        "main.py": {"before": "old code", "after": "new code"},
+    }
+
+    mock_assistant = Mock()
+    mock_assistant.review_changes.side_effect = [
+        "Mocked review for config.toml",
+        "Mocked review for main.py",
+    ]
+    MockCodeReviewAssistant.return_value = mock_assistant
+
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "--api-key",
+            "test_key",
+            "--program-language",
+            "Python",
+            "--result-output-language",
+            "English",
+            "--review-all-files",
+            "review",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "config.toml" in result.output
+    assert "main.py" in result.output
+    assert "Mocked review for config.toml" in result.output
+    assert "Mocked review for main.py" in result.output
+
+    MockCodeReviewAssistant.assert_called_once_with(
+        repo_path="/mock/git/root",
+        vendor_name="openai",
+        model_name="gpt-3.5-turbo",
+        api_key="test_key",
+        temperature=0.1,
+        code_depth=0,
+        program_language=["Python"],
+        result_output_language="English",
+        ignore_settings_files=False,
+    )
