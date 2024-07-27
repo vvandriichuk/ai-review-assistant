@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.6.1] - 2024-07-27
+### Added
+- Fixed some minor bugs with versions and documentations
+
 ## [0.6.0] - 2024-07-27
 ### Added
 - You can put your own prompt to pyproject.toml file using [tool.code_review_assistant] block. Example of such block:
@@ -37,7 +41,6 @@ Provide your summary in {result_output_language}.
 """
 ```
 
-
 ## [0.5.0] - 2024-07-26
 ### Added
 - You can check version of AI Review Assistant
@@ -56,7 +59,8 @@ Provide your summary in {result_output_language}.
 ### Added
 - Init library
 
-[Unreleased]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.1.0...v0.4.0
