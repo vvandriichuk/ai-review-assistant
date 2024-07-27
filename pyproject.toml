@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ai-review-assistant"
-version = "0.5.0"
+version = "0.6.0"
 description = "An AI-powered code review assistant"
 authors = ["Viktor Andriichuk <v.andriichuk@gmail.com>"]
 readme = "README.md"
@@ -24,6 +24,8 @@ types-setuptools = "^71.1.0.20240724"
 twine = "^5.1.1"
 build = "^1.2.1"
 importlib-metadata = {version = "^4.0", python = "<3.8"}
+toml = "^0.10.2"
+types-toml = "^0.10.8.20240310"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.0"
@@ -91,3 +93,35 @@ max-complexity = 20
 
 [tool.ruff.lint.flake8-annotations]
 suppress-dummy-args = true
+
+[tool.code_review_assistant]
+prompt_template = """
+You are an AI Code Review Assistant with expert knowledge of {program_language}. As a senior {program_language} developer, review the following code changes:
+
+Project Structure:
+{project_structure}
+
+File being reviewed: {file_path}
+
+Analyze the code changes considering these aspects:
+1. Code quality and readability
+2. Potential bugs or errors
+3. Performance implications
+4. Consistency with the overall project structure
+5. Suggestions for improvement
+6. Best practices specific to {program_language}
+
+Instructions for your response:
+- Provide a concise summary (about 4-6 points) of your overall findings.
+- Focus only on the most important or critical issues, if any.
+- Clearly state whether you found any critical issues that need immediate attention.
+- Include 1-2 key suggestions for improvement, if applicable.
+- If no significant issues were found, briefly mention that the changes look good, but still provide a suggestion for potential enhancement if possible.
+
+Your summary should be structured as follows:
+1. Overall assessment (1-2 points)
+2. Critical issues (if any) (1-2 points)
+3. Key suggestions for improvement (3-4 points)
+
+Provide your summary in {result_output_language}.
+"""

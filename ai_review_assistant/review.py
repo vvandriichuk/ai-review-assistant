@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Literal
 
 import tiktoken
+import toml
 from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage
@@ -60,7 +61,6 @@ class CodeReviewAssistant:
             return ChatOpenAI(
                 model=self.model_name,
                 temperature=self.temperature,
-                timeout=None,
                 max_retries=2,
                 api_key=SecretStr(self.api_key),
             )
@@ -68,10 +68,10 @@ class CodeReviewAssistant:
             return ChatAnthropic(
                 model_name=self.model_name,
                 temperature=self.temperature,
-                timeout=None,
                 max_retries=2,
                 api_key=SecretStr(self.api_key),
                 stop=None,
+                timeout=None,
                 base_url=None,
             )
         else:
@@ -138,32 +138,61 @@ class CodeReviewAssistant:
         else:
             return str(response.content)
 
-    def construct_base_prompt(self, file_path: str, project_structure: str) -> str:
-        """
-        Construct the base prompt for the code review.
+    def read_prompt_template_from_toml(self) -> str | None:
+        pyproject_path = Path(self.repo_path) / "pyproject.toml"
+        if pyproject_path.exists():
+            try:
+                config = toml.load(pyproject_path)
+                return (
+                    config.get("tool", {})
+                    .get("code_review_assistant", {})
+                    .get("prompt_template")
+                )
+            except toml.TomlDecodeError:
+                print("Error decoding pyproject.toml file")
+        return None
 
-        :param file_path: The path of the file being reviewed.
-        :param project_structure: The structure of the project.
-        :return: The base prompt as a string.
-        """
-        return f"""
-        You are an AI Code Review Assistant and you know {self.program_language} as an expert. You are a {self.program_language} senior developer. Please review the following code changes and provide feedback:
+    def construct_base_prompt(self, file_path: str, project_structure: str) -> str:
+        template = (
+            self.read_prompt_template_from_toml()
+            or """
+        You are an AI Code Review Assistant with expert knowledge of {program_language}. As a senior {program_language} developer, review the following code changes:
 
         Project Structure:
         {project_structure}
 
         File being reviewed: {file_path}
 
-        Please provide a detailed review, considering the following aspects:
+        Analyze the code changes considering these aspects:
         1. Code quality and readability
         2. Potential bugs or errors
         3. Performance implications
         4. Consistency with the overall project structure
         5. Suggestions for improvement
-        6. Best practices specific to {self.program_language}
+        6. Best practices specific to {program_language}
 
-        Please provide your review in {self.result_output_language}.
+        Instructions for your response:
+        - Provide a concise summary (about 4-6 points) of your overall findings.
+        - Focus only on the most important or critical issues, if any.
+        - Clearly state whether you found any critical issues that need immediate attention.
+        - Include 1-2 key suggestions for improvement, if applicable.
+        - If no significant issues were found, briefly mention that the changes look good, but still provide a suggestion for potential enhancement if possible.
+
+        Your summary should be structured as follows:
+        1. Overall assessment (1-2 points)
+        2. Critical issues (if any) (1-2 points)
+        3. Key suggestions for improvement (3-4 points)
+
+        Provide your summary in {result_output_language}.
         """
+        )
+
+        return template.format(
+            program_language=self.program_language,
+            project_structure=project_structure,
+            file_path=file_path,
+            result_output_language=self.result_output_language,
+        )
 
     def construct_prompt(
         self,
@@ -171,14 +200,6 @@ class CodeReviewAssistant:
         before_code: str,
         after_code: str,
     ) -> str:
-        """
-        Construct the full prompt for the code review.
-
-        :param file_path: The path of the file being reviewed.
-        :param before_code: The code before changes.
-        :param after_code: The code after changes.
-        :return: The full prompt as a string.
-        """
         base_prompt = self.construct_base_prompt(
             file_path,
             self.get_project_structure(self.repo_path, self.code_depth),

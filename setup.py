@@ -33,6 +33,8 @@ setup(
         "openai>=1.37.0",
         "anthropic>=0.31.2",
         "importlib-metadata;python_version<'3.8'",
+        "toml>=0.10.2",
+        "types-toml>=0.10.8",
     ],
     extras_require={
         "dev": [
