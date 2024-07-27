@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ai-review-assistant"
-version = "0.6.1"
+version = "0.6.2"
 description = "An AI-powered code review assistant"
 authors = ["Viktor Andriichuk <v.andriichuk@gmail.com>"]
 readme = "README.md"
@@ -26,6 +26,7 @@ build = "^1.2.1"
 importlib-metadata = {version = "^4.0", python = "<3.8"}
 toml = "^0.10.2"
 types-toml = "^0.10.8.20240310"
+rich = "^13.7.1"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.11.0"

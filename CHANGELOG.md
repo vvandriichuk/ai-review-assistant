@@ -1,7 +1,11 @@
 # Changelog
 
-## [0.6.1] - 2024-07-27
+## [0.6.2] - 2024-07-27
 ### Added
+- Added missed rich library to dependencies list
+
+## [0.6.1] - 2024-07-27
+### Fixed
 - Fixed some minor bugs with versions and documentations
 
 ## [0.6.0] - 2024-07-27
@@ -59,7 +63,8 @@ Provide your summary in {result_output_language}.
 ### Added
 - Init library
 
-[Unreleased]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/vvandriichuk/ai-review-assistant/compare/v0.4.0...v0.5.0
